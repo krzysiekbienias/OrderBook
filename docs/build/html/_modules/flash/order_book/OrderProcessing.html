@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>flash.order_book.OrderProcessing &mdash; Flash 0.0.1 documentation</title>
+      <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+      <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <!--[if lt IE 9]>
+    <script src="../../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+        <script data-url_root="../../../" id="documentation_options" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/sphinx_highlight.js"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            Flash
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <!-- Local TOC -->
+              <div class="local-toc"></div>
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">Flash</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">flash.order_book.OrderProcessing</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for flash.order_book.OrderProcessing</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">flash.python_tool_kit.IOToolKit</span> <span class="kn">import</span> <span class="n">IOToolKit</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="kn">import</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">,</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">heapq</span> <span class="k">as</span> <span class="nn">h</span>
+
+<span class="n">HM</span> <span class="o">=</span> <span class="n">TypeVar</span><span class="p">(</span><span class="s2">&quot;HM&quot;</span><span class="p">,</span> <span class="n">bound</span><span class="o">=</span><span class="n">Dict</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="OrderHandler"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler">[docs]</a><span class="k">class</span> <span class="nc">OrderHandler</span><span class="p">():</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">signal</span><span class="p">:</span><span class="n">HM</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">=</span><span class="n">signal</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peak</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">unpackRequest</span><span class="p">(</span><span class="n">signal</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">order_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orderToDisplay</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OrderHandler.unpackRequest"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler.unpackRequest">[docs]</a>    <span class="k">def</span> <span class="nf">unpackRequest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s1">&#39;id&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">price</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s1">&#39;price&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s2">&quot;quantity&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">signal</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;Iceberg&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_peak</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s1">&#39;peak&#39;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+    
+    <span class="k">def</span> <span class="fm">__lt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;__lt__</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        This method compare two &#39;OrderHandler&#39; objects and identify which is a  smaller one in terms of quantity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : OrderHandler</span>
+<span class="sd">            </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">&lt;</span> <span class="n">other</span><span class="o">.</span><span class="n">quantity</span>
+    
+    <span class="k">def</span> <span class="fm">__gt__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">)</span><span class="o">-&gt;</span><span class="nb">bool</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;__gt__</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        This method compare two &#39;OrderHandler&#39; objects and identify which is a larger one in terms of quantity.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        other : _type_</span>
+<span class="sd">            _description_</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        bool</span>
+<span class="sd">            _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span> <span class="o">&gt;</span> <span class="n">other</span><span class="o">.</span><span class="n">quantity</span>
+    
+    <span class="k">def</span> <span class="fm">__sub__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">other</span><span class="p">):</span>
+
+        <span class="n">signal</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;type&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">,</span><span class="s2">&quot;order&quot;</span><span class="p">:{</span><span class="s2">&quot;direction&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="p">,</span><span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="s2">&quot;price&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="s2">&quot;quantity&quot;</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">quantity</span><span class="o">-</span><span class="n">other</span><span class="o">.</span><span class="n">quantity</span><span class="p">}}</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span>
+
+
+
+    
+<div class="viewcode-block" id="OrderHandler.orderToDisplay"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler.orderToDisplay">[docs]</a>    <span class="k">def</span> <span class="nf">orderToDisplay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">HM</span><span class="p">:</span>
+
+        <span class="k">return</span> <span class="p">{</span>
+            <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+            <span class="s2">&quot;price&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="p">,</span>
+            <span class="s2">&quot;quantity&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">quantity</span>
+        <span class="p">}</span></div>
+    
+    <span class="k">def</span> <span class="fm">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;__str__</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        String representation of &#39;OrderHandler&#39; Object.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        str</span>
+<span class="sd">            _description_</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="sa">f</span><span class="s1">&#39;Order direction is </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">direction</span><span class="si">}</span><span class="s1">. Order has following attributes: id:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s1">, price:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">price</span><span class="si">}</span><span class="s1">, quantity:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">quantity</span><span class="si">}</span><span class="s1">&#39;</span></div>
+
+<div class="viewcode-block" id="OrderBook"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook">[docs]</a><span class="k">class</span> <span class="nc">OrderBook</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming_orders</span><span class="p">:</span> <span class="n">HM</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_orders</span> <span class="o">=</span> <span class="n">incoming_orders</span>
+
+        
+        <span class="bp">self</span><span class="o">.</span><span class="n">asks_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">bids_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_ask</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_bid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;buyOrders&quot;</span><span class="p">:[],</span><span class="s2">&quot;sellOrders&quot;</span><span class="p">:[]}</span>
+
+        <span class="k">for</span> <span class="n">incoming_order</span> <span class="ow">in</span> <span class="n">incoming_orders</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">_order</span><span class="o">=</span><span class="n">OrderHandler</span><span class="p">(</span><span class="n">incoming_order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">validateQuery</span><span class="p">(</span><span class="n">incoming_order</span><span class="o">=</span><span class="n">_order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">incomingOrderHandle</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">_order</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">asks_list</span> <span class="ow">or</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">bids_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">toStdOut</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">_order</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">asks_list</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">bids_list</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">updateOrderBookCondition</span><span class="p">(</span><span class="n">incoming_order</span><span class="o">=</span><span class="n">_order</span><span class="p">)</span>
+               
+
+                
+<div class="viewcode-block" id="OrderBook.incomingOrderHandle"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.incomingOrderHandle">[docs]</a>    <span class="k">def</span> <span class="nf">incomingOrderHandle</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;incomingOrderHandle</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        This method updates on fly the containers for asks and bids offers. It takes new offer and if this is a &#39;buy&#39; offer then it puts on the heap,</span>
+<span class="sd">        otherwise it puts on mean heap.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        order : OrderHandler</span>
+<span class="sd">            New order which is passing through a gate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;Buy&quot;</span><span class="p">:</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">asks_list</span><span class="p">,(</span><span class="o">-</span><span class="n">order</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="n">order</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">direction</span> <span class="o">==</span> <span class="s2">&quot;Sell&quot;</span><span class="p">:</span>
+            <span class="n">h</span><span class="o">.</span><span class="n">heappush</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">bids_list</span><span class="p">,(</span><span class="n">order</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="n">order</span><span class="p">))</span></div>
+            
+<div class="viewcode-block" id="OrderBook.toStdOut"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.toStdOut">[docs]</a>    <span class="k">def</span> <span class="nf">toStdOut</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Buy&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;buyOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">order_label</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Sell&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;sellOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">order</span><span class="o">.</span><span class="n">order_label</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">)</span> </div>
+
+
+
+
+<div class="viewcode-block" id="OrderBook.validateQuery"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.validateQuery">[docs]</a>    <span class="k">def</span> <span class="nf">validateQuery</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">incoming_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Iceberg&quot;</span><span class="p">,</span> <span class="s2">&quot;Limit&quot;</span><span class="p">]:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Type of order might be only &#39;Iceberg&#39; and &#39;Limit&#39;.&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query </span><span class="si">{</span><span class="n">incoming_order</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> is valid!&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OrderBook.updateOrderBookCondition"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.updateOrderBookCondition">[docs]</a>    <span class="k">def</span> <span class="nf">updateOrderBookCondition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">incoming_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
+        <span class="n">max_price</span><span class="p">,</span><span class="n">trade_object_asks</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">asks_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">min_price</span><span class="p">,</span><span class="n">trade_object_bids</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">bids_list</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Buy&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">price</span><span class="o">&lt;</span><span class="n">min_price</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not possible to match trade for upcoming buy order with id: </span><span class="si">{</span><span class="n">incoming_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">matchingEngine</span><span class="p">(</span><span class="n">incoming_order</span><span class="o">=</span><span class="n">incoming_order</span><span class="p">,</span><span class="n">matched_order</span><span class="o">=</span><span class="n">trade_object_bids</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Sell&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">price</span><span class="o">&gt;</span><span class="nb">abs</span><span class="p">(</span><span class="n">max_price</span><span class="p">):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Not possible to match trade for upcoming buy order with id: </span><span class="si">{</span><span class="n">incoming_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">()</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">toStdOut</span><span class="p">(</span><span class="n">incoming_order</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">matchingEngine</span><span class="p">(</span><span class="n">incoming_order</span><span class="o">=</span><span class="n">incoming_order</span><span class="p">,</span><span class="n">matched_order</span><span class="o">=</span><span class="n">trade_object_asks</span><span class="p">)</span></div>
+
+
+            
+
+<div class="viewcode-block" id="OrderBook.removeOrder"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.removeOrder">[docs]</a>    <span class="k">def</span> <span class="nf">removeOrder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">existing_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;removeOrder</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Remove the record from book after cancel out two trades.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        existing_order : OrderHandler</span>
+<span class="sd">            Order that has been associated with new Order and thus removed from book.</span>
+<span class="sd">        Note</span>
+<span class="sd">        ----</span>
+<span class="sd">        This happen only if volume of two trades are the same.    </span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">existing_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Buy&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;buyOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">existing_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Sell&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;sellOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="p">)</span></div>
+
+        
+
+
+<div class="viewcode-block" id="OrderBook.matchingEngine"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.matchingEngine">[docs]</a>    <span class="k">def</span> <span class="nf">matchingEngine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">incoming_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">,</span><span class="n">matched_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;matchingEngine</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        This function update trade if match on the market happen. If both quantities are equal then we wipe out matched order from the book.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        incoming_order : OrderHandler</span>
+<span class="sd">            New order which just arrived from client.</span>
+<span class="sd">        matched_order : OrderHandler</span>
+<span class="sd">            Order that already exists in the book and deal may happen with the new offer.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Incoming Order:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">incoming_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;We are matching with order:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">matched_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Matching Order: &quot;</span><span class="o">+</span> <span class="n">matched_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span>
+        <span class="k">if</span> <span class="n">incoming_order</span><span class="o">&lt;</span><span class="n">matched_order</span><span class="p">:</span>
+            <span class="n">updated_order</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;id&quot;</span><span class="p">:</span><span class="n">matched_order</span><span class="o">.</span><span class="n">id</span><span class="p">,</span><span class="s2">&quot;price&quot;</span><span class="p">:</span><span class="n">matched_order</span><span class="o">.</span><span class="n">price</span><span class="p">,</span><span class="s2">&quot;quantity&quot;</span><span class="p">:</span><span class="n">matched_order</span><span class="o">.</span><span class="n">quantity</span><span class="o">-</span><span class="n">incoming_order</span><span class="o">.</span><span class="n">quantity</span><span class="p">}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">incomingOrderHandle</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">updated_order</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">incoming_order</span><span class="o">&gt;</span><span class="n">matched_order</span><span class="p">:</span>
+            <span class="n">updated_order</span><span class="o">=</span><span class="n">incoming_order</span><span class="o">-</span><span class="n">matched_order</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;After transactions we have trade: &quot;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">updated_order</span><span class="o">.</span><span class="fm">__str__</span><span class="p">())</span> 
+            <span class="bp">self</span><span class="o">.</span><span class="n">incomingOrderHandle</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">updated_order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">toStdOut</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="n">updated_order</span><span class="p">)</span>  
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Incoming order and match order are canceled out! Remove order with id match_order.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">removeOrder</span><span class="p">(</span><span class="n">matched_order</span><span class="p">)</span></div></div>
+            
+
+        
+        
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023, Krzysztof Bienias.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

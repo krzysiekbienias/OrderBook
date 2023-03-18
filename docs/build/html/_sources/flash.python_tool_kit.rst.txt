@@ -1,0 +1,21 @@
+flash.python\_tool\_kit package
+===============================
+
+Submodules
+----------
+
+flash.python\_tool\_kit.IOToolKit module
+----------------------------------------
+
+.. automodule:: flash.python_tool_kit.IOToolKit
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: flash.python_tool_kit
+   :members:
+   :undoc-members:
+   :show-inheritance:

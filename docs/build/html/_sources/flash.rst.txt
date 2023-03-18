@@ -1,0 +1,19 @@
+flash package
+=============
+
+Subpackages
+-----------
+
+.. toctree::
+   :maxdepth: 4
+
+   flash.order_book
+   flash.python_tool_kit
+
+Module contents
+---------------
+
+.. automodule:: flash
+   :members:
+   :undoc-members:
+   :show-inheritance:

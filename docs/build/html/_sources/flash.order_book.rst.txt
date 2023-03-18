@@ -1,0 +1,21 @@
+flash.order\_book package
+=========================
+
+Submodules
+----------
+
+flash.order\_book.OrderProcessing module
+----------------------------------------
+
+.. automodule:: flash.order_book.OrderProcessing
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+Module contents
+---------------
+
+.. automodule:: flash.order_book
+   :members:
+   :undoc-members:
+   :show-inheritance:
