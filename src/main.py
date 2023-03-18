@@ -1,15 +1,17 @@
 from src.python_tool_kit.IOToolKit import IOToolKit
+from src.order_book.OrderProcessing import OrderBook,OrderHandler
 import os
 
 
 
-input_data_location=r"/Users/krzysiekbienias/Documents/GitHub/OrderBook/io"
-upload_orders=True
-proces_order=False
+trade_flow_location=r"/Users/krzysiekbienias/Documents/GitHub/OrderBook/io"
+orders_sequence_file="test2.in"
+# upload_orders=True
+# process_order=False
 
 
-order_map=IOToolKit.parseInputFile(os.path.join(input_data_location,"test1.in"))
+orders_gate_map=IOToolKit.parseInputFile(os.path.join(trade_flow_location,orders_sequence_file))
 
+OrderBook(incoming_orders=orders_gate_map)
+    
 
-
-print("Hello matherfacker")

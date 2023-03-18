@@ -11,9 +11,7 @@ class IOToolKit:
         
         for order in orders_container:
             order_map=json.loads(order)
-            id_order=order_map['order']
-           
-
-            
+            id_order=order_map['order']['id']
+            orders_map.update({id_order:order_map})
         return orders_map
 
