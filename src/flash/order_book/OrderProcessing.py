@@ -1,4 +1,4 @@
-from python_tool_kit.IOToolKit import IOToolKit
+from flash.python_tool_kit.IOToolKit import IOToolKit
 from typing import TypeVar, Iterable, Tuple, Dict, List
 import os
 import heapq as h
@@ -155,6 +155,11 @@ class OrderBook:
         if incoming_order.type not in ["Iceberg", "Limit"]:
             raise ValueError(
                 "Type of order might be only 'Iceberg' and 'Limit'.")
+        if incoming_order.price<0:
+            raise ValueError("Price cannot be negative!")
+        if incoming_order.quantity<0:
+            raise ValueError("Quantity value cannot be negative!")
+
         print(f"Query {incoming_order.id} is valid!")
 
     def updateOrderBookCondition(self,incoming_order:OrderHandler):

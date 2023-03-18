@@ -1,6 +1,8 @@
 ## Order Book
 
-The aim of this script is to provide ...
+The aim of this script is to provide comprehensive module to handle flow and processing Orders. 
+
+Library Flash serve two kind of orders. Limit order and Iceberg order.
 
 #### Table of contents
 [Installation](#installation)  
