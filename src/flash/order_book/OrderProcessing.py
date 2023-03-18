@@ -112,9 +112,6 @@ class OrderBook:
         self.current_bid = None
         self._orders_status={"buyOrders":[],"sellOrders":[]}
 
-
-
-
         for incoming_order in incoming_orders.values():
             _order=OrderHandler(incoming_order)
             self.validateQuery(incoming_order=_order)
