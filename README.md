@@ -14,7 +14,7 @@ The aim of this script is to provide ...
 ## Dev Docs
 You may find html documentation class under following link
 
-https://githack.com/krzysiekbienias/order_book/blob/master/docs/build/html/index.html
+https://raw.githack.com/krzysiekbienias/order_book/master/docs/build/html/index.html
 
 
 
