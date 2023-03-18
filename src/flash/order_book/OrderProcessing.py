@@ -8,7 +8,18 @@ HM = TypeVar("HM", bound=Dict)
 
 class OrderHandler():
 
+
     def __init__(self,signal:HM) -> None:
+        """__init__ 
+        Description
+        -----------
+        Class that handles order object in abstract form.
+
+        Parameters
+        ----------
+        signal : HM
+            Single order that went through system's gate.
+        """
 
         self._signal=signal
 
@@ -23,7 +34,21 @@ class OrderHandler():
 
         self.order_label = self.orderToDisplay()
 
-    def unpackRequest(self, signal: str):
+    def unpackRequest(self, signal: str)->None:
+        """unpackRequest
+        Description
+        -----------
+        Unpack trades' attributes from trade dictionary.
+
+        Parameters
+        ----------
+        signal : str
+            
+
+        Returns
+        -------
+        None
+        """
 
         self.type = signal['type']
         self.direction = signal["order"]['direction']
@@ -79,6 +104,14 @@ class OrderHandler():
 
     
     def orderToDisplay(self)->HM:
+        """orderToDisplay
+        This method casts trades parameters on hash map. 
+
+        Returns
+        -------
+        HM
+            HM required to display.
+        """
 
         return {
             "id": self.id,
@@ -102,6 +135,16 @@ class OrderHandler():
 class OrderBook:
 
     def __init__(self, incoming_orders: HM) -> None:
+        """__init__
+        Description
+        -----------
+        Class for processing new trade and set new trade status.
+
+        Parameters
+        ----------
+        incoming_orders : HM
+            Hash Map of hash maps that represents flow of trades.
+        """
 
         self._incoming_orders = incoming_orders
 
