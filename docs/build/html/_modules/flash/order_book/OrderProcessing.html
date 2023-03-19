@@ -74,7 +74,18 @@
 
 <div class="viewcode-block" id="OrderHandler"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler">[docs]</a><span class="k">class</span> <span class="nc">OrderHandler</span><span class="p">():</span>
 
+
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">signal</span><span class="p">:</span><span class="n">HM</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;__init__ </span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Class that handles order object in abstract form.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : HM</span>
+<span class="sd">            Single order that went through system&#39;s gate.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_signal</span><span class="o">=</span><span class="n">signal</span>
 
@@ -89,7 +100,21 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">order_label</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">orderToDisplay</span><span class="p">()</span>
 
-<div class="viewcode-block" id="OrderHandler.unpackRequest"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler.unpackRequest">[docs]</a>    <span class="k">def</span> <span class="nf">unpackRequest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<div class="viewcode-block" id="OrderHandler.unpackRequest"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler.unpackRequest">[docs]</a>    <span class="k">def</span> <span class="nf">unpackRequest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">signal</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span><span class="o">-&gt;</span><span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;unpackRequest</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Unpack trades&#39; attributes from trade dictionary.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        signal : str</span>
+<span class="sd">            </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        None</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s1">&#39;type&#39;</span><span class="p">]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">direction</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[</span><span class="s2">&quot;order&quot;</span><span class="p">][</span><span class="s1">&#39;direction&#39;</span><span class="p">]</span>
@@ -145,6 +170,14 @@
 
     
 <div class="viewcode-block" id="OrderHandler.orderToDisplay"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderHandler.orderToDisplay">[docs]</a>    <span class="k">def</span> <span class="nf">orderToDisplay</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">HM</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;orderToDisplay</span>
+<span class="sd">        This method casts trades parameters on hash map. </span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        HM</span>
+<span class="sd">            HM required to display.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">return</span> <span class="p">{</span>
             <span class="s2">&quot;id&quot;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
@@ -168,6 +201,16 @@
 <div class="viewcode-block" id="OrderBook"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook">[docs]</a><span class="k">class</span> <span class="nc">OrderBook</span><span class="p">:</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">incoming_orders</span><span class="p">:</span> <span class="n">HM</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;__init__</span>
+<span class="sd">        Description</span>
+<span class="sd">        -----------</span>
+<span class="sd">        Class for processing new trade and set new trade status.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        incoming_orders : HM</span>
+<span class="sd">            Hash Map of hash maps that represents flow of trades.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_incoming_orders</span> <span class="o">=</span> <span class="n">incoming_orders</span>
 
@@ -221,6 +264,11 @@
         <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;Iceberg&quot;</span><span class="p">,</span> <span class="s2">&quot;Limit&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
                 <span class="s2">&quot;Type of order might be only &#39;Iceberg&#39; and &#39;Limit&#39;.&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">price</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Price cannot be negative!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">incoming_order</span><span class="o">.</span><span class="n">quantity</span><span class="o">&lt;</span><span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Quantity value cannot be negative!&quot;</span><span class="p">)</span>
+
         <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Query </span><span class="si">{</span><span class="n">incoming_order</span><span class="o">.</span><span class="n">id</span><span class="si">}</span><span class="s2"> is valid!&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OrderBook.updateOrderBookCondition"><a class="viewcode-back" href="../../../flash.order_book.html#flash.order_book.OrderProcessing.OrderBook.updateOrderBookCondition">[docs]</a>    <span class="k">def</span> <span class="nf">updateOrderBookCondition</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">incoming_order</span><span class="p">:</span><span class="n">OrderHandler</span><span class="p">):</span>
@@ -256,10 +304,11 @@
 <span class="sd">        ----</span>
 <span class="sd">        This happen only if volume of two trades are the same.    </span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1">#TODO fix it!</span>
         <span class="k">if</span> <span class="n">existing_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Buy&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;buyOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;buyOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="o">.</span><span class="n">order_label</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">existing_order</span><span class="o">.</span><span class="n">direction</span><span class="o">==</span><span class="s2">&quot;Sell&quot;</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;sellOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="p">)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_orders_status</span><span class="p">[</span><span class="s2">&quot;sellOrders&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">existing_order</span><span class="o">.</span><span class="n">order_label</span><span class="p">)</span></div>
 
         
 
