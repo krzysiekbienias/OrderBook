@@ -8,8 +8,7 @@ HM = TypeVar("HM", bound=Dict)
 
 class OrderHandler():
 
-
-    def __init__(self,signal:HM) -> None:
+    def __init__(self, signal: HM) -> None:
         """__init__ 
         Description
         -----------
@@ -21,7 +20,7 @@ class OrderHandler():
             Single order that went through system's gate.
         """
 
-        self._signal=signal
+        self._signal = signal
 
         self.type = None
         self.direction = None
@@ -34,7 +33,7 @@ class OrderHandler():
 
         self.order_label = self.orderToDisplay()
 
-    def unpackRequest(self, signal: str)->None:
+    def unpackRequest(self, signal: str) -> None:
         """unpackRequest
         Description
         -----------
@@ -58,8 +57,8 @@ class OrderHandler():
         if signal['type'] == "Iceberg":
             self._peak = signal["order"]['peak']
         return self
-    
-    def __lt__(self, other)->bool:
+
+    def __lt__(self, other) -> bool:
         """__lt__
         Description
         -----------
@@ -76,8 +75,8 @@ class OrderHandler():
             
         """
         return self.quantity < other.quantity
-    
-    def __gt__(self,other)->bool:
+
+    def __gt__(self, other) -> bool:
         """__gt__
         Description
         -----------
@@ -94,16 +93,49 @@ class OrderHandler():
             _description_
         """
         return self.quantity > other.quantity
-    
-    def __sub__(self,other):
 
-        signal={"type":self.type,"order":{"direction":self.direction,"id":self.id,"price":self.price,"quantity":self.quantity-other.quantity}}
-        return self.__class__(signal)
+    def __sub__(self, other):
+        """__sub__
+        Description
+        -----------
+        This method defines how to subtract two orders in terms of quantities. In case of Iceberg order not define from quantity but from peak volume. 
 
+        Parameters
+        ----------
+        other : OrderHandler
+            Order to be subtract
+        type : str, optional
+            type, by default None
 
+        Returns
+        -------
+        _type_
+            _description_
+        """
+        if self.type == "Limit":
+            signal = {
+                "type": self.type,
+                "order": {
+                    "direction": self.direction,
+                    "id": self.id,
+                    "price": self.price,
+                    "quantity": self.quantity - other.quantity
+                }
+            }
+            return self.__class__(signal)
+        elif self.type == "Iceberg":
+            signal = {
+                "type": self.type,
+                "order": {
+                    "direction": self.direction,
+                    "id": self.id,
+                    "price": self.price,
+                    "quantity": self.peak - other.quantity
+                }
+            }
+            return self.__class__(signal)
 
-    
-    def orderToDisplay(self)->HM:
+    def orderToDisplay(self) -> HM:
         """orderToDisplay
         This method casts trades parameters on hash map. 
 
@@ -113,12 +145,8 @@ class OrderHandler():
             HM required to display.
         """
 
-        return {
-            "id": self.id,
-            "price": self.price,
-            "quantity": self.quantity
-        }
-    
+        return {"id": self.id, "price": self.price, "quantity": self.quantity}
+
     def __str__(self) -> str:
         """__str__
         Description
@@ -131,6 +159,7 @@ class OrderHandler():
             _description_
         """
         return f'Order direction is {self.direction}. Order has following attributes: id:{self.id}, price:{self.price}, quantity:{self.quantity}'
+
 
 class OrderBook:
 
@@ -148,29 +177,30 @@ class OrderBook:
 
         self._incoming_orders = incoming_orders
 
-        
         self.asks_list = []
         self.bids_list = []
-        self.current_ask = None
-        self.current_bid = None
-        self._orders_status={"buyOrders":[],"sellOrders":[]}
+        self._orders_status = {"buyOrders": [], "sellOrders": []}
+        self._transactions_container = []
 
         for incoming_order in incoming_orders.values():
-            _order=OrderHandler(incoming_order)
+            _order = OrderHandler(incoming_order)
             self.validateQuery(incoming_order=_order)
             self.incomingOrderHandle(order=_order)
             if not self.asks_list or not self.bids_list:
                 self.toStdOut(order=_order)
             elif self.asks_list and self.bids_list:
                 self.updateOrderBookCondition(incoming_order=_order)
-               
 
-                
-    def incomingOrderHandle(self, order:OrderHandler)->None:
+        if len(self._transactions_container) > 0:
+            for tran in self._transactions_container:
+                print(tran)
+
+    def incomingOrderHandle(self, order: OrderHandler) -> None:
         """incomingOrderHandle
         Description
         -----------
-        This method updates on fly the containers for asks and bids offers. It takes new offer and if this is a 'buy' offer then it puts on the heap,
+        This method updates on fly the containers for asks and bids offers.
+        It takes new offer and if this is a 'buy' offer then it puts on the heap,
         otherwise it puts on mean heap.
 
         Parameters
@@ -179,11 +209,11 @@ class OrderBook:
             New order which is passing through a gate.
         """
         if order.direction == "Buy":
-            h.heappush(self.asks_list,(-order.price,order))
+            h.heappush(self.asks_list, (-order.price, order))
         if order.direction == "Sell":
-            h.heappush(self.bids_list,(order.price,order))
-            
-    def toStdOut(self,order:OrderHandler):
+            h.heappush(self.bids_list, (order.price, order))
+
+    def toStdOut(self, order: OrderHandler):
         """toStdOut
         Description
         -----------
@@ -194,17 +224,14 @@ class OrderBook:
         order : OrderHandler
             Last order in system, which passed validation test.
         """
-        if order.direction=="Buy":
+        if order.direction == "Buy":
             self._orders_status["buyOrders"].append(order.order_label)
             print(self._orders_status)
-        elif order.direction=="Sell":
+        elif order.direction == "Sell":
             self._orders_status["sellOrders"].append(order.order_label)
-            print(self._orders_status) 
+            print(self._orders_status)
 
-
-
-
-    def validateQuery(self,incoming_order:OrderHandler):
+    def validateQuery(self, incoming_order: OrderHandler):
         """validateQuery
         Description
         -----------
@@ -227,35 +254,39 @@ class OrderBook:
         if incoming_order.type not in ["Iceberg", "Limit"]:
             raise ValueError(
                 "Type of order might be only 'Iceberg' and 'Limit'.")
-        if incoming_order.price<0:
+        if incoming_order.price < 0:
             raise ValueError("Price cannot be negative!")
-        if incoming_order.quantity<0:
+        if incoming_order.quantity < 0:
             raise ValueError("Quantity value cannot be negative!")
         if incoming_order.direction not in ["Buy", "Sell"]:
             raise ValueError("Direction might be only 'Buy' or 'Sell'")
 
         print(f"Query {incoming_order.id} is valid!")
 
-    def updateOrderBookCondition(self,incoming_order:OrderHandler):
-        max_price,trade_object_asks=self.asks_list[0]
-        min_price,trade_object_bids=self.bids_list[0]
-        if incoming_order.direction=="Buy":
-            if incoming_order.price<min_price:
-                print(f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}")
+    def updateOrderBookCondition(self, incoming_order: OrderHandler):
+
+        max_price, trade_object_asks = self.asks_list[0]
+        min_price, trade_object_bids = self.bids_list[0]
+        if incoming_order.direction == "Buy":
+            if incoming_order.price < min_price:
+                print(
+                    f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}"
+                )
 
             else:
-                self.matchingEngine(incoming_order=incoming_order,matched_order=trade_object_bids)
-        elif incoming_order.direction=="Sell":
-            if incoming_order.price>abs(max_price):
-                print(f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}")
+                self.matchingEngine(incoming_order=incoming_order,
+                                    matched_order=trade_object_bids)
+        elif incoming_order.direction == "Sell":
+            if incoming_order.price > abs(max_price):
+                print(
+                    f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}"
+                )
                 self.toStdOut(incoming_order)
             else:
-                self.matchingEngine(incoming_order=incoming_order,matched_order=trade_object_asks)
+                self.matchingEngine(incoming_order=incoming_order,
+                                    matched_order=trade_object_asks)
 
-
-            
-
-    def removeOrder(self,existing_order:OrderHandler):
+    def removeOrder(self, existing_order: OrderHandler):
         """removeOrder
         Description
         -----------
@@ -270,15 +301,14 @@ class OrderBook:
         This happen only if volume of two trades are the same.    
         """
         #TODO fix it!
-        if existing_order.direction=="Buy":
+        if existing_order.direction == "Buy":
             self._orders_status["buyOrders"].remove(existing_order.order_label)
-        elif existing_order.direction=="Sell":
-            self._orders_status["sellOrders"].remove(existing_order.order_label)
+        elif existing_order.direction == "Sell":
+            self._orders_status["sellOrders"].remove(
+                existing_order.order_label)
 
-        
-
-
-    def matchingEngine(self,incoming_order:OrderHandler,matched_order:OrderHandler):
+    def matchingEngine(self, incoming_order: OrderHandler,
+                       matched_order: OrderHandler):
         """matchingEngine
         Description
         -----------
@@ -297,28 +327,64 @@ class OrderBook:
         print("We are matching with order:")
         print(matched_order.__str__())
 
-        print("Matching Order: "+ matched_order.__str__())
-        if incoming_order<matched_order:
-            updated_order=matched_order-incoming_order
+        print("Matching Order: " + matched_order.__str__())
+        if incoming_order < matched_order:
+            updated_order = matched_order - incoming_order
             print("After transactions we have trade: ")
             print(updated_order.__str__())
-            self.removeOrder(matched_order) 
-            self.incomingOrderHandle(order=updated_order)
-            self.toStdOut(order=updated_order)  
-            
-            
-            
-        elif incoming_order>matched_order:
-            updated_order=incoming_order-matched_order
-            print("After transactions we have trade: ")
-            print(updated_order.__str__()) 
-            self.incomingOrderHandle(order=updated_order)
-            self.removeOrder(matched_order)
-            self.toStdOut(order=updated_order)  
-        else:
-            print("Incoming order and match order are canceled out! Remove order with id match_order.")
-            self.removeOrder(matched_order)
-            
+            if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                self.printTransactions(buy_order=matched_order,
+                                       sell_order=incoming_order)
+            else:
+                self.printTransactions(buy_order=incoming_order,
+                                       sell_order=matched_order)
 
-        
-        
+            self.incomingOrderHandle(order=updated_order)
+            self.removeOrder(matched_order)
+            self.toStdOut(order=updated_order)
+
+        elif incoming_order > matched_order:
+            updated_order = incoming_order - matched_order
+            print("After transactions we have trade: ")
+            print(updated_order.__str__())
+            self.incomingOrderHandle(order=updated_order)
+
+            if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                self.printTransactions(buy_order=matched_order,
+                                       sell_order=incoming_order)
+            else:
+                self.printTransactions(buy_order=incoming_order,
+                                       sell_order=matched_order)
+            self.removeOrder(matched_order)
+            self.toStdOut(order=updated_order)
+        else:
+            print(
+                "Incoming order and match order are canceled out! Remove order with id match_order."
+            )
+            if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                self.printTransactions(buy_order=matched_order,
+                                       sell_order=incoming_order)
+            else:
+                self.printTransactions(buy_order=incoming_order,
+                                       sell_order=matched_order)
+            self.removeOrder(matched_order)
+
+    def printTransactions(self, buy_order: OrderHandler,
+                          sell_order: OrderHandler):
+
+        if buy_order < sell_order:
+            price = buy_order.price
+            self._transactions_container.append({
+                "buyOrderId": buy_order.id,
+                "sellOrderId": sell_order.id,
+                "price": price,
+                "quantity": buy_order.quantity
+            })
+        elif buy_order > sell_order:
+            price = sell_order.price
+            self._transactions_container.append({
+                "buyOrderId": buy_order.id,
+                "sellOrderId": sell_order.id,
+                "price": price,
+                "quantity": sell_order.quantity
+            })
