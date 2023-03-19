@@ -184,6 +184,16 @@ class OrderBook:
             h.heappush(self.bids_list,(order.price,order))
             
     def toStdOut(self,order:OrderHandler):
+        """toStdOut
+        Description
+        -----------
+        Display current state of the Order book.
+
+        Parameters
+        ----------
+        order : OrderHandler
+            Last order in system, which passed validation test.
+        """
         if order.direction=="Buy":
             self._orders_status["buyOrders"].append(order.order_label)
             print(self._orders_status)
@@ -195,6 +205,25 @@ class OrderBook:
 
 
     def validateQuery(self,incoming_order:OrderHandler):
+        """validateQuery
+        Description
+        -----------
+        This method check if order from stream is valid.
+
+        Parameters
+        ----------
+        incoming_order : OrderHandler
+            An order to be checked.
+
+        Raises
+        ------
+        ValueError
+            
+        ValueError
+            _description_
+        ValueError
+            _description_
+        """
         if incoming_order.type not in ["Iceberg", "Limit"]:
             raise ValueError(
                 "Type of order might be only 'Iceberg' and 'Limit'.")
@@ -202,6 +231,8 @@ class OrderBook:
             raise ValueError("Price cannot be negative!")
         if incoming_order.quantity<0:
             raise ValueError("Quantity value cannot be negative!")
+        if incoming_order.direction not in ["Buy", "Sell"]:
+            raise ValueError("Direction might be only 'Buy' or 'Sell'")
 
         print(f"Query {incoming_order.id} is valid!")
 
@@ -268,13 +299,21 @@ class OrderBook:
 
         print("Matching Order: "+ matched_order.__str__())
         if incoming_order<matched_order:
-            updated_order={"id":matched_order.id,"price":matched_order.price,"quantity":matched_order.quantity-incoming_order.quantity}
+            updated_order=matched_order-incoming_order
+            print("After transactions we have trade: ")
+            print(updated_order.__str__())
+            self.removeOrder(matched_order) 
             self.incomingOrderHandle(order=updated_order)
+            self.toStdOut(order=updated_order)  
+            
+            
+            
         elif incoming_order>matched_order:
             updated_order=incoming_order-matched_order
             print("After transactions we have trade: ")
             print(updated_order.__str__()) 
             self.incomingOrderHandle(order=updated_order)
+            self.removeOrder(matched_order)
             self.toStdOut(order=updated_order)  
         else:
             print("Incoming order and match order are canceled out! Remove order with id match_order.")
