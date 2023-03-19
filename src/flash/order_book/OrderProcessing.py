@@ -238,10 +238,11 @@ class OrderBook:
         ----
         This happen only if volume of two trades are the same.    
         """
+        #TODO fix it!
         if existing_order.direction=="Buy":
-            self._orders_status["buyOrders"].remove(existing_order)
+            self._orders_status["buyOrders"].remove(existing_order.order_label)
         elif existing_order.direction=="Sell":
-            self._orders_status["sellOrders"].remove(existing_order)
+            self._orders_status["sellOrders"].remove(existing_order.order_label)
 
         
 
