@@ -95,8 +95,6 @@ class OrderHandler():
         """
         return self.quantity > other.quantity
 
-    
-
     def orderToDisplay(self) -> HM:
         """orderToDisplay
         This method casts trades parameters on hash map. 
@@ -197,6 +195,7 @@ class OrderBook:
             self.flowOrderHandle(order=_order)
             if not self.asks_list or not self.bids_list:
                 self.uploadToOrderStatus(order=_order)
+                print(self._orders_status)
             elif self.asks_list and self.bids_list:
                #overwritten_order is an existing order that we would have positive quantity after matching
                self.updateOrderBookCondition(incoming_order=_order)
@@ -252,7 +251,7 @@ class OrderBook:
         if incoming_order.direction not in ["Buy", "Sell"]:
             raise ValueError("Direction might be only 'Buy' or 'Sell'")
 
-        print(f"Query {incoming_order.id} is valid!")
+
     # ------------------
     # End Region: Order check
     # ------------------            
@@ -273,7 +272,7 @@ class OrderBook:
         if order.direction == "Buy":
             
             if any(order.id in sub_tuple for sub_tuple in self.asks_list):
-                print("This trade already exist.")
+               
                 for _o in self.asks_list:
                     if _o[1]==order.id and order.quantity!=0:
                         _o[2].quantity=order.quantity
@@ -288,7 +287,7 @@ class OrderBook:
             #  If so then first remove it and then put on heap with updated quantity.
         if order.direction == "Sell":
             if any(order.id in sub_tuple for sub_tuple in self.bids_list):
-                print("This trade already exist.")
+                
                 for _o in self.bids_list:
                     if _o[1]==order.id and order.quantity!=0:
                         _o[2].quantity=order.quantity
@@ -359,10 +358,9 @@ class OrderBook:
         
         if incoming_order.direction == "Buy":
             if incoming_order.price < min_price:
-                print(
-                    f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}"
-                )
+                
                 self.uploadToOrderStatus(incoming_order)
+                print(self._orders_status)
 
             else:
                  
@@ -370,10 +368,9 @@ class OrderBook:
                                         matched_order=trade_object_bids)
         elif incoming_order.direction == "Sell":
             if incoming_order.price > abs(max_price):
-                print(
-                    f"Not possible to match trade for upcoming buy order with id: {incoming_order.__str__()}"
-                )
+                
                 self.uploadToOrderStatus(incoming_order)
+                print(self._orders_status)
             else: 
                 
                     return self.matchingEngine(incoming_order=incoming_order,
@@ -418,18 +415,11 @@ class OrderBook:
             Order that already exists in the book and deal may happen with the new offer.
         """
 
-        print("Incoming Order:")
-        print(incoming_order.__str__())
-
-        print("We are matching with order:")
-        print(matched_order.__str__())
-
-        print("Matching Order: " + matched_order.__str__())
+       
         # ------------------
         # Region: Two Limits Order
         # ------------------
         if incoming_order.type == "Limit" and matched_order.type == "Limit":
-            print("We are matching limit orders ...")
             
             if incoming_order < matched_order: #here we compare quantity
                 # ------------------
@@ -503,11 +493,6 @@ class OrderBook:
             # ------------------
             # Region: Order volumes are equal
             # ------------------
-
-
-                print(
-                    "Incoming order and match order are canceled out! Remove order with id match_order."
-                )
                 incoming_order_after_deal=incoming_order.updateQuantity(incoming_order.quantity)
                 matched_order_after_deal=matched_order.updateQuantity(incoming_order.quantity)
                 if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
@@ -525,95 +510,159 @@ class OrderBook:
             # ------------------
             # Region: Order volumes are equal
             # ------------------          
-                
-        
-        
         # ------------------
         # End Region: Two Limits Order
         # ------------------
-        else:
+
         # ------------------
         # Region: Iceberg Order
         # ------------------
-            outstanding_quantity = min(incoming_order.quantity,
-                                       matched_order.quantity)
-            if incoming_order.peak is not None:
-                peak = incoming_order.peak
-            elif matched_order.peak is not None:
-                peak = incoming_order.peak
 
-                if (incoming_order.type == "Iceberg"
-                        or matched_order.type == "Iceberg"):
-                    print("At least one order is an Iceberg order...")
+        elif matched_order.type == "Iceberg" and incoming_order.type == "Limit":
+        
+            if incoming_order < matched_order:
+                #do until smaller order quantity ois positive
+                while incoming_order.quantity > 0:
+                    
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order) 
+                        if incoming_order.quantity>=incoming_order.peak:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                            matched_order=matched_order.updateQuantity(incoming_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
+                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                self.flowOrderHandle(order=incoming_order_after_deal)
+                self.flowOrderHandle(order=matched_order_after_deal)
+                self.uploadToOrderStatus(order=matched_order_after_deal)
+                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)             
+            elif incoming_order > matched_order:
+                #do until smaller order quantity ois positive
+                while matched_order.quantity > 0:
+                    
+                    if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                        self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                    else:
+                        self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                    if matched_order.quantity>=matched_order.peak:
+                        incoming_order=incoming_order.updateQuantity(matched_order.peak)
+                        matched_order=matched_order.updateQuantity(matched_order.peak)
+                    else:
+                        incoming_order=incoming_order.updateQuantity(matched_order.quantity)
+                        matched_order=matched_order.updateQuantity(matched_order.quantity)
+                self.flowOrderHandle(order=matched_order)
+                self.flowOrderHandle(order=incoming_order)
+                self.uploadToOrderStatus(order=incoming_order)
+                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)
+        elif matched_order.type == "Limit" and incoming_order.type == "Iceberg":
+            if incoming_order < matched_order:
+                #do until smaller order quantity ois positive
+                while incoming_order.quantity > 0:
+                    
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order) 
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                        if incoming_order.quantity>=incoming_order.peak:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                            matched_order=matched_order.updateQuantity(incoming_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
+                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                self.flowOrderHandle(order=incoming_order_after_deal)
+                self.flowOrderHandle(order=matched_order_after_deal)
+                self.uploadToOrderStatus(order=matched_order_after_deal)
+                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)             
+            elif incoming_order > matched_order:
+                #do until smaller order quantity ois positive
+                while matched_order.quantity > 0:
+                    
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                        if incoming_order.quantity>=incoming_order.peak:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                            matched_order=matched_order.updateQuantity(incoming_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
+                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                self.flowOrderHandle(order=matched_order)
+                self.flowOrderHandle(order=incoming_order)
+                self.uploadToOrderStatus(order=incoming_order)
+                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)
+        elif matched_order.type == "Iceberg" and incoming_order.type == "Iceberg":
+            if incoming_order < matched_order:
+                #do until smaller order quantity ois positive
+                while incoming_order.quantity > 0:
+                    
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order) 
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                        if incoming_order.quantity>=incoming_order.peak:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                            matched_order=matched_order.updateQuantity(incoming_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
+                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                self.flowOrderHandle(order=incoming_order_after_deal)
+                self.flowOrderHandle(order=matched_order_after_deal)
+                self.uploadToOrderStatus(order=matched_order_after_deal)
+                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)             
+            elif incoming_order > matched_order:
+                #do until smaller order quantity ois positive
+                while matched_order.quantity > 0:
+                    
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
 
-                    if incoming_order < matched_order:
-                        while outstanding_quantity > 0:
-                            updated_order = matched_order - incoming_order
-                            if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
-                                self.uploadTransactions(
-                                    buy_order=matched_order,
-                                    sell_order=incoming_order)
-                                print(self._transactions_container)
-                            else:
-                                self.uploadTransactions(
-                                    buy_order=incoming_order,
-                                    sell_order=matched_order)
-                            print("After transactions we have trade: ")
-                            print(updated_order.__str__())
-                        self.flowOrderHandle(order=updated_order)
-                        self.removeOrder(matched_order)
-                        self.uploadToOrderStatus(order=updated_order)
+                        if matched_order.quantity>=matched_order.peak:
+                            incoming_order=incoming_order.updateQuantity(matched_order.peak)
+                            matched_order=matched_order.updateQuantity(matched_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(matched_order.quantity)
+                            matched_order=matched_order.updateQuantity(matched_order.quantity)
+                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
+                        else:
+                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
+                            
 
-                    elif incoming_order > matched_order:
+                        if incoming_order.quantity>=incoming_order.peak:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                            matched_order=matched_order.updateQuantity(incoming_order.peak)
+                        else:
+                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
+                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                self.flowOrderHandle(order=matched_order)
+                self.flowOrderHandle(order=incoming_order)
+                self.uploadToOrderStatus(order=incoming_order)
+                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)        
 
-                        #do until smaller order quantity ois positive
-                        while matched_order.quantity > 0:
-                            if incoming_order.type == "Limit" and matched_order.type == "Iceberg":
-                                if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
-                                    self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
-                                    print(self._transactions_container)
-                                else:
-                                    self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
-                                    print(self._transactions_container)
+            
 
-                                if matched_order.quantity>=matched_order.peak:
-                                    incoming_order=incoming_order.updateQuantity(matched_order.peak)
-                                    matched_order=matched_order.updateQuantity(matched_order.peak)
-                                else:
-                                    incoming_order=incoming_order.updateQuantity(matched_order.quantity)
-                                    matched_order=matched_order.updateQuantity(matched_order.quantity)
-
-                                print(str(incoming_order))
-                                print(str(matched_order))
-                            elif incoming_order.type == "Iceberg" and matched_order.type == "Limit":
-                                if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
-                                    self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
-                                    print(self._transactions_container)
-                                else:
-                                    self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
-                                    print(self._transactions_container)    
-
-                                if incoming_order.quantity>=incoming_order.peak:
-                                    incoming_order=incoming_order.updateQuantity(incoming_order.peak)
-                                    matched_order=matched_order.updateQuantity(incoming_order.peak)
-                                else:
-                                    incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
-                                    matched_order=matched_order.updateQuantity(incoming_order.quantity)    
-                                print(str(incoming_order))
-                                print(str(matched_order))
-
-                        updated_order=incoming_order #always order for which still quantity is positive    
-                        self.flowOrderHandle(order=updated_order)
-                        id_order_to_remove=matched_order.id
-                        self.removeOrder(matched_order,id_for_remove=id_order_to_remove)
-                        h.heappop(self.asks_list)
-                        return updated_order
-
-                        #remove must be done via id, because trade's attributes might be modified 
-                        #before prompt this check if another match is possible, so remove prompter
-                        # ------------------
-                        #  End Region: Iceberg Order
-                        # ------------------
+        #remove must be done via id, because trade's attributes might be modified 
+        #before prompt this check if another match is possible, so remove prompter
+        # ------------------
+        #  End Region: Iceberg Order
+        # ------------------
                       
 
     def uploadTransactions(self, buy_order: OrderHandler,
