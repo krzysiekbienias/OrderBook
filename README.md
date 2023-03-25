@@ -11,8 +11,8 @@ An Iceberg order is a large single order that have been divided into smaller `li
 
 #### Table of contents
 [Installation](#installation)  
-[Project Structure](#ProjectStructure)
-[Dev Docs](#DevDocs)
+[Project Structure](#ProjectStructure)  
+[Dev Docs](#DevDocs)  
 [General Overview](#GeneralOverview)  
 [Configuration](#Configuration)  
 
@@ -24,10 +24,11 @@ Below we present structure of project `Flash`
     |--STREAM FILES
     |--OUTPUT FILES
 -- src
-    |
-  flash
-    |--order_book
-    |--python_tool_kit
+    |-flash
+    |    |--order_book
+    |    |--python_tool_kit
+    |-main.py
+  
 ```
 
 ## Dev Docs
