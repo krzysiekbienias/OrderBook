@@ -610,16 +610,10 @@ class OrderBook:
                             self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
                         else:
                             self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order) 
-                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
-                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
-                        else:
-                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
                         if incoming_order.quantity>=incoming_order.peak:
                             incoming_order=incoming_order.updateQuantity(incoming_order.peak)
                             matched_order=matched_order.updateQuantity(incoming_order.peak)
-                        else:
-                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
-                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+                        
                 self.flowOrderHandle(order=incoming_order_after_deal)
                 self.flowOrderHandle(order=matched_order_after_deal)
                 self.uploadToOrderStatus(order=matched_order_after_deal)
@@ -632,29 +626,32 @@ class OrderBook:
                             self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
                         else:
                             self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
-
                         if matched_order.quantity>=matched_order.peak:
                             incoming_order=incoming_order.updateQuantity(matched_order.peak)
-                            matched_order=matched_order.updateQuantity(matched_order.peak)
-                        else:
-                            incoming_order=incoming_order.updateQuantity(matched_order.quantity)
-                            matched_order=matched_order.updateQuantity(matched_order.quantity)
-                        if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
-                            self.uploadTransactions(buy_order=matched_order,sell_order=incoming_order)
-                        else:
-                            self.uploadTransactions(buy_order=incoming_order,sell_order=matched_order)
-                            
+                            matched_order=matched_order.updateQuantity(matched_order.peak)                            
 
-                        if incoming_order.quantity>=incoming_order.peak:
-                            incoming_order=incoming_order.updateQuantity(incoming_order.peak)
-                            matched_order=matched_order.updateQuantity(incoming_order.peak)
-                        else:
-                            incoming_order=incoming_order.updateQuantity(incoming_order.quantity)
-                            matched_order=matched_order.updateQuantity(incoming_order.quantity)
+
+
+             
                 self.flowOrderHandle(order=matched_order)
                 self.flowOrderHandle(order=incoming_order)
                 self.uploadToOrderStatus(order=incoming_order)
-                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)        
+                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)
+            else:
+                incoming_order=incoming_order.updateQuantity(incoming_order.peak)
+                matched_order=matched_order.updateQuantity(incoming_order.peak)
+                if incoming_order.direction == "Sell" and matched_order.direction == "Buy":
+                    self.uploadTransactions(buy_order=matched_order,
+                                            sell_order=incoming_order)
+                else:
+                    self.uploadTransactions(buy_order=incoming_order,
+                                            sell_order=matched_order)
+                self.flowOrderHandle(order=matched_order)
+                self.flowOrderHandle(order=incoming_order)    
+                self.uploadToOrderStatus(order=incoming_order)
+                self.uploadToOrderStatus(order=matched_order)
+                self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)
+                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)            
 
             
 
