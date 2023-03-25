@@ -95,57 +95,7 @@ class OrderHandler():
         """
         return self.quantity > other.quantity
 
-    def __sub__(self, other):
-        """__sub__
-        Description
-        -----------
-        This method defines how to subtract two orders in terms of quantities. In case of Iceberg order not define from quantity but from peak volume. 
-
-        Parameters
-        ----------
-        other : OrderHandler
-            Order to be subtract
-        type : str, optional
-            type, by default None
-
-        Returns
-        -------
-        _type_
-            _description_
-        """
-        if self.type == "Limit" and other.type == "Limit":
-            signal = {
-                "type": self.type,
-                "order": {
-                    "direction": self.direction,
-                    "id": self.id,
-                    "price": self.price,
-                    "quantity": self.quantity - other.quantity
-                }
-            }
-
-        elif self.type == "Iceberg" and other.type == "Limit":
-            signal = {
-                "type": self.type,
-                "order": {
-                    "direction": self.direction,
-                    "id": self.id,
-                    "price": self.price,
-                    "quantity": other.quantity - self.peak
-                }
-            }
-        elif self.type == "Limit" and other.type == "Iceberg":
-            signal = {
-                "type": self.type,
-                "order": {
-                    "direction": self.direction,
-                    "id": self.id,
-                    "price": self.price,
-                    "quantity": self.quantity - other.peak
-                }
-            }
-
-        return self.__class__(signal)
+    
 
     def orderToDisplay(self) -> HM:
         """orderToDisplay
@@ -515,9 +465,9 @@ class OrderBook:
                 # End Region: Incoming Order has bigger volume
                 # ------------------
             elif incoming_order > matched_order:
-                # ------------------
-                # Region: Existing Order has bigger volume
-                # ------------------
+            # ------------------
+            # Region: Existing Order has bigger volume
+            # ------------------
 
                 # we compare with respect to quantity so we subtract quantity from smaller
     
@@ -545,8 +495,16 @@ class OrderBook:
 
                     self.flowOrderHandle(order=incoming_order_after_deal)
                     self.flowOrderHandle(order=matched_order_after_deal)
+            # ------------------
+            # End Region: Existing Order has bigger volume
+            # ------------------        
                     
             else:
+            # ------------------
+            # Region: Order volumes are equal
+            # ------------------
+
+
                 print(
                     "Incoming order and match order are canceled out! Remove order with id match_order."
                 )
@@ -563,15 +521,20 @@ class OrderBook:
                 self.uploadToOrderStatus(order=incoming_order_after_deal)
                 self.uploadToOrderStatus(order=matched_order_after_deal)
                 self.removeOrder(existing_order=matched_order,id_for_remove=matched_order.id)
-                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)      
+                self.removeOrder(existing_order=incoming_order,id_for_remove=incoming_order.id)
+            # ------------------
+            # Region: Order volumes are equal
+            # ------------------          
                 
         
         
-
+        # ------------------
+        # End Region: Two Limits Order
+        # ------------------
         else:
-            # ------------------
-            # Region: Iceberg Order
-            # ------------------
+        # ------------------
+        # Region: Iceberg Order
+        # ------------------
             outstanding_quantity = min(incoming_order.quantity,
                                        matched_order.quantity)
             if incoming_order.peak is not None:
