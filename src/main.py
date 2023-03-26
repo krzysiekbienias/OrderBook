@@ -4,20 +4,30 @@ import os
 import sys
 
 
+# ------------------
+# Region: User customization
+# ------------------ 
+working_directory="/Users/krzysiekbienias/Documents/GitHub"
+test_name="test1"
+# ---------------------
+# Region: User customization
+# ---------------------
 
-trade_flow_location=r"/Users/krzysiekbienias/Documents/GitHub/OrderBook/io/STREAM_FILES"
-orders_sequence_file="match_and_disappear.in"
+trade_flow_location="OrderBook/io/STREAM_FILES"
+orders_sequence_file=test_name+".in"
+IOToolKit.validateInputFiles(working_directory+'/'+trade_flow_location,test_file=orders_sequence_file)
 
-output_stdout=r"/Users/krzysiekbienias/Documents/GitHub/OrderBook/io/OUTPUT_FILES"
-output_names="out_generic.out"
+output_names=test_name+".out"
+output_stdout="OrderBook/io/OUTPUT_FILES"
 
-orders_gate_map=IOToolKit.parseInputFile(os.path.join(trade_flow_location,orders_sequence_file))
 
-# f=open(os.path.join(output_stdout,output_names),"w")
-# sys.stdout=f
+orders_gate_map=IOToolKit.parseInputFile(os.path.join(working_directory,trade_flow_location,orders_sequence_file))
+
+f=open(os.path.join(working_directory,output_stdout,output_names),"w")
+sys.stdout=f
 OrderBook(incoming_orders=orders_gate_map)
-print("THE END!")
-# f.close()
+f.close()
+
 
 
     
