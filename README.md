@@ -78,6 +78,26 @@ The hart of  this module is a matching engine, that handle the process of runnin
 After checking the matching then one more check is run to find out if re-balancing order book make possible for another deals.
 
 Once trade goes through a gate the code sends to current status of order book. The second input, included in the same file is list of transactions if any happen.
+## Input output format.
+Input has following format.
+```
+{"type":"Limit","order":{"direction":"Buy","id":1,"price":14,"quantity":20}}
+{"type":"Iceberg","order":{"direction":"Buy","id":2,"price":15,"quantity":50,"peak":20}}
+{"type":"Limit","order":{"direction":"Sell","id":3,"price":16,"quantity":15}}
+{"type":"Limit","order":{"direction":"Sell","id":4,"price":13,"quantity":60}}
+```
+
+Example of output format
+```
+{'buyOrders': [{'id': 1, 'price': 14, 'quantity': 20}], 'sellOrders': []}
+{'buyOrders': [{'id': 1, 'price': 14, 'quantity': 20}, {'id': 2, 'price': 15, 'quantity': 50}], 'sellOrders': []}
+{'buyOrders': [{'id': 1, 'price': 14, 'quantity': 20}, {'id': 2, 'price': 15, 'quantity': 50}], 'sellOrders': [{'id': 3, 'price': 16, 'quantity': 15}]}
+{'buyOrders': [{'id': 1, 'price': 14, 'quantity': 10}], 'sellOrders': [{'id': 3, 'price': 16, 'quantity': 15}]}
+{'buyOrderId': 2, 'sellOrderId': 4, 'price': 15, 'quantity': 20}
+{'buyOrderId': 2, 'sellOrderId': 4, 'price': 15, 'quantity': 20}
+{'buyOrderId': 2, 'sellOrderId': 4, 'price': 15, 'quantity': 10}
+{'buyOrderId': 1, 'sellOrderId': 4, 'price': 13, 'quantity': 10}
+```
 
 ## Further Development
 * Implement class for generating random order book in form json that match input format file for extensive testing. 
