@@ -54,6 +54,8 @@ HM = TypeVar("HM", bound=Dict)
 ## Project Structure
 Below we present structure of project `Flash`
 ```
+-- .vscode
+-- docs
 -- io
     |--STREAM FILES
     |--OUTPUT FILES
@@ -62,10 +64,9 @@ Below we present structure of project `Flash`
     |    |--order_book
     |    |--python_tool_kit
     |-main.py
---README.md
---run.sh  
---.gitignore  
-  
+-- README.md
+-- run.sh  
+-- .gitignore    
 ```
 
 ## Dev Docs
