@@ -1,6 +1,7 @@
 import json
 from typing import TypeVar, Iterable, Tuple, Dict, List
 HM = TypeVar("HM", bound=Dict)
+import os
 
 
 class IOToolKit:
@@ -32,4 +33,11 @@ class IOToolKit:
             id_order=order_map['order']['id']
             orders_map.update({id_order:order_map})
         return orders_map
+
+
+    @staticmethod
+    def validateInputFiles(inputs_path,test_file):
+        if not os.path.isfile(os.path.join(inputs_path,test_file)):
+            ValueError(f"There is no  test file {test_file}.")
+
 
