@@ -44,17 +44,19 @@
 <li><a class="reference internal" href="#submodules">Submodules</a></li>
 <li><a class="reference internal" href="#module-flash.order_book.OrderProcessing">flash.order_book.OrderProcessing module</a><ul>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook"><code class="docutils literal notranslate"><span class="pre">OrderBook</span></code></a><ul>
-<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.incomingOrderHandle"><code class="docutils literal notranslate"><span class="pre">OrderBook.incomingOrderHandle()</span></code></a></li>
+<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.flowOrderHandle"><code class="docutils literal notranslate"><span class="pre">OrderBook.flowOrderHandle()</span></code></a></li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.matchingEngine"><code class="docutils literal notranslate"><span class="pre">OrderBook.matchingEngine()</span></code></a></li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.removeOrder"><code class="docutils literal notranslate"><span class="pre">OrderBook.removeOrder()</span></code></a></li>
-<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.toStdOut"><code class="docutils literal notranslate"><span class="pre">OrderBook.toStdOut()</span></code></a></li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.updateOrderBookCondition"><code class="docutils literal notranslate"><span class="pre">OrderBook.updateOrderBookCondition()</span></code></a></li>
+<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.uploadToOrderStatus"><code class="docutils literal notranslate"><span class="pre">OrderBook.uploadToOrderStatus()</span></code></a></li>
+<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.uploadTransactions"><code class="docutils literal notranslate"><span class="pre">OrderBook.uploadTransactions()</span></code></a></li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderBook.validateQuery"><code class="docutils literal notranslate"><span class="pre">OrderBook.validateQuery()</span></code></a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler"><code class="docutils literal notranslate"><span class="pre">OrderHandler</span></code></a><ul>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler.orderToDisplay"><code class="docutils literal notranslate"><span class="pre">OrderHandler.orderToDisplay()</span></code></a></li>
 <li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler.unpackRequest"><code class="docutils literal notranslate"><span class="pre">OrderHandler.unpackRequest()</span></code></a></li>
+<li><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler.updateQuantity"><code class="docutils literal notranslate"><span class="pre">OrderHandler.updateQuantity()</span></code></a></li>
 </ul>
 </li>
 </ul>
@@ -100,11 +102,12 @@
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">flash.order_book.OrderProcessing.</span></span><span class="sig-name descname"><span class="pre">OrderBook</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incoming_orders</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">HM</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook" title="Permalink to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <dl class="py method">
-<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.incomingOrderHandle">
-<span class="sig-name descname"><span class="pre">incomingOrderHandle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.incomingOrderHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.incomingOrderHandle" title="Permalink to this definition"></a></dt>
+<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.flowOrderHandle">
+<span class="sig-name descname"><span class="pre">flowOrderHandle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.flowOrderHandle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.flowOrderHandle" title="Permalink to this definition"></a></dt>
 <dd><section id="description">
 <h3>Description<a class="headerlink" href="#description" title="Permalink to this heading"></a></h3>
-<p>This method updates on fly the containers for asks and bids offers. It takes new offer and if this is a ‘buy’ offer then it puts on the heap,
+<p>This method updates on fly the containers for asks and bids offers.
+It takes new offer and if this is a ‘buy’ offer then it puts on the heap,
 otherwise it puts on mean heap.</p>
 <dl class="field-list simple">
 <dt class="field-odd">param order<span class="colon">:</span></dt>
@@ -142,7 +145,7 @@ otherwise it puts on mean heap.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.removeOrder">
-<span class="sig-name descname"><span class="pre">removeOrder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">existing_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.removeOrder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.removeOrder" title="Permalink to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">removeOrder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">existing_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">id_for_remove</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.removeOrder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.removeOrder" title="Permalink to this definition"></a></dt>
 <dd><section id="id2">
 <h3>Description<a class="headerlink" href="#id2" title="Permalink to this heading"></a></h3>
 <p>Remove the record from book after cancel out two trades.</p>
@@ -162,19 +165,85 @@ otherwise it puts on mean heap.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.toStdOut">
-<span class="sig-name descname"><span class="pre">toStdOut</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.toStdOut"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.toStdOut" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
 <dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.updateOrderBookCondition">
 <span class="sig-name descname"><span class="pre">updateOrderBookCondition</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incoming_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.updateOrderBookCondition"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.updateOrderBookCondition" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><section id="id3">
+<h3>Description<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<dl class="field-list simple">
+<dt class="field-odd">param incoming_order<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+<dt class="field-even">type incoming_order<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderHandler</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.uploadToOrderStatus">
+<span class="sig-name descname"><span class="pre">uploadToOrderStatus</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.uploadToOrderStatus"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.uploadToOrderStatus" title="Permalink to this definition"></a></dt>
+<dd><section id="id4">
+<h3>Description<a class="headerlink" href="#id4" title="Permalink to this heading"></a></h3>
+<p>Upload new order for the Order book.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param order<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Last order in system, which passed validation test.</p>
+</dd>
+<dt class="field-even">type order<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderHandler</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.uploadTransactions">
+<span class="sig-name descname"><span class="pre">uploadTransactions</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buy_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sell_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.uploadTransactions"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.uploadTransactions" title="Permalink to this definition"></a></dt>
+<dd><section id="id5">
+<h3>Description<a class="headerlink" href="#id5" title="Permalink to this heading"></a></h3>
+<p>This method prints transactions that has place in format defined in the spec.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param buy_order<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Matching order from ask side.</p>
+</dd>
+<dt class="field-even">type buy_order<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderHandler</p>
+</dd>
+<dt class="field-odd">param sell_order<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Matching order from bid side.</p>
+</dd>
+<dt class="field-even">type sell_order<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderHandler</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderBook.validateQuery">
 <span class="sig-name descname"><span class="pre">validateQuery</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">incoming_order</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler"><span class="pre">OrderHandler</span></a></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderBook.validateQuery"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderBook.validateQuery" title="Permalink to this definition"></a></dt>
-<dd></dd></dl>
+<dd><section id="id6">
+<h3>Description<a class="headerlink" href="#id6" title="Permalink to this heading"></a></h3>
+<p>This method check if order from stream is valid.</p>
+<dl class="field-list simple">
+<dt class="field-odd">param incoming_order<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An order to be checked.</p>
+</dd>
+<dt class="field-even">type incoming_order<span class="colon">:</span></dt>
+<dd class="field-even"><p>OrderHandler</p>
+</dd>
+<dt class="field-odd">raises ValueError<span class="colon">:</span></dt>
+<dd class="field-odd"><p></p></dd>
+<dt class="field-even">raises ValueError<span class="colon">:</span></dt>
+<dd class="field-even"><p>_description_</p>
+</dd>
+<dt class="field-odd">raises ValueError<span class="colon">:</span></dt>
+<dd class="field-odd"><p>_description_</p>
+</dd>
+</dl>
+</section>
+</dd></dl>
 
 </dd></dl>
 
@@ -199,8 +268,8 @@ otherwise it puts on mean heap.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderHandler.unpackRequest">
 <span class="sig-name descname"><span class="pre">unpackRequest</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderHandler.unpackRequest"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderHandler.unpackRequest" title="Permalink to this definition"></a></dt>
-<dd><section id="id3">
-<h3>Description<a class="headerlink" href="#id3" title="Permalink to this heading"></a></h3>
+<dd><section id="id7">
+<h3>Description<a class="headerlink" href="#id7" title="Permalink to this heading"></a></h3>
 <p>Unpack trades’ attributes from trade dictionary.</p>
 <dl class="field-list simple">
 <dt class="field-odd">param signal<span class="colon">:</span></dt>
@@ -213,6 +282,26 @@ otherwise it puts on mean heap.</p>
 </dd>
 </dl>
 </section>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="flash.order_book.OrderProcessing.OrderHandler.updateQuantity">
+<span class="sig-name descname"><span class="pre">updateQuantity</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sub_quantity</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/flash/order_book/OrderProcessing.html#OrderHandler.updateQuantity"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#flash.order_book.OrderProcessing.OrderHandler.updateQuantity" title="Permalink to this definition"></a></dt>
+<dd><p>This function downgrades quantity volume after making a deal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sub_quantity</strong> (<em>int</em>) – </p></li>
+<li><p><strong>subtracted.</strong> (<em>Quantity to be</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Object with update quantity.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#flash.order_book.OrderProcessing.OrderHandler" title="flash.order_book.OrderProcessing.OrderHandler">OrderHandler</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
