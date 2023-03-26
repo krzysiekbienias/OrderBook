@@ -1,6 +1,6 @@
 # Order Book
 
-## Preview,
+## Preview.
 In the trading world, the order book is the place where all active orders (both Bou and Sell) are maintained in certain priority for the purpose of matching buy and sell orders. Orders can be different types, but within this framework consider two following types:
 
 * Limit Order  
@@ -15,8 +15,18 @@ An Iceberg order is a large single order that have been divided into smaller `li
 [Dev Docs](#DevDocs)  
 [General Overview](#GeneralOverview)  
 [Configuration](#Configuration)  
+[Further development](#Futherdevelopment)  
 
-## Installation
+## Installation and run
+After cloning the repository please kindly change root file in main for your local path where code has been deployed.
+Then you may test different inputs by changing name of the test or define your own tests.
+
+Then it might be run from bash using the command, permission to run granted.
+```
+../run.sh  main.py
+```
+Please only make sure that you are in *src* folder.
+
 ## Project Structure
 Below we present structure of project `Flash`
 ```
@@ -28,6 +38,9 @@ Below we present structure of project `Flash`
     |    |--order_book
     |    |--python_tool_kit
     |-main.py
+--README.md
+--run.sh  
+--.gitignore  
   
 ```
 
@@ -36,7 +49,17 @@ You may find html documentation class under following link
 
 https://raw.githack.com/krzysiekbienias/order_book/master/docs/build/html/index.html
 
+## Matching algorithm.
+The hart of  this module is a matching engine, that handle the process of running deals within existing. Incoming order is handled on flay ad the deal is the fact peak has been chose to keep the efficiently way to match immediately the best offer for buy and sell. In case two or more orders with the same ask prices meet order that allow to run transaction with bid offer first is run deal with lower id.
+After checking the matching then one more check is run to find out if re-balancing order book make possible for another deals.
 
+Once trade goes through a gate the code sends to current status of order book. The second input, included in the same file is list of transactions if any happen.
+
+## Further Development
+* Implement class for generating random order book in form json that match input format file for extensive testing. 
+* Implement Unit Tests
+* Implement Jupyter lab as a demo.
+* add logger files.
 
 
 
